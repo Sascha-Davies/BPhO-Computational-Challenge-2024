@@ -1,12 +1,18 @@
+##Imports
+from math import *
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  ##Allows Embedding with Tkinter
 from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FFMpegWriter
 from tkinter import *
 from tkinter import ttk
 from functools import partial
 
+##
+print(np.asin(0.2))
+##
 bgcolour = "grey"
 sg = "blue"
 Window = Tk()
@@ -14,7 +20,9 @@ Window.geometry("1250x1000")
 GraphShowing = "Y,X"
 Window.config(bg = "blue")
 BackGround = Frame(Window,width = 1000,height = 1000,bg = bgcolour)
+#SelectGround = Frame(Window,width = 125,height = 1000,bg = sg)#The frame buttons for choosing challenge is
 BackGround.pack()
+#SelectGround.pack(side = LEFT)
 Buttons = []
 Switch = []
 Simulations = []
@@ -23,23 +31,36 @@ List = []
 Challenge = []
 Sim = []
 ScaleButtons = []
-
+##Might Make Own Legend Where all Variables Are Displayed to save space
+#apogee - Highest Point
+#make a way to export as png
+#Instantiate Rest of Values for each challenge in a method
 def func(z):
-    y = 0.5**2*np.log(abs(np.sqrt(1+z**2)+z))+0.5*z*np.sqrt(1+z**2)
+    y = 0.5**2*log(abs(sqrt(1+z**2)+z))+0.5*z*sqrt(1+z**2)
     return y
-
 def InvertedParabolicArcCalculation(U,θ,g,R): ## Challenge 6 ## Almost Finished Come Bsck
   ##Calculate limits
-  θ = θ * np.pi/180
-  a = (U**2)/(g*(1+(np.tan(θ))**2))
-  b = np.tan(θ)
-  c = np.tan(θ) - g*R*(1+(np.tan(θ))**2)/(U**2)
+  θ = θ * pi/180
+  a = (U**2)/(g*(1+(tan(θ))**2))
+  b = tan(θ)
+  c = tan(θ) - g*R*(1+(tan(θ))**2)/(U**2)
   s = a * (func(b) - func(c))
   #x = linspace(0,R,N)
   #t = x/U*cos(θ)
   
   return s
-
+#h = 2
+#U = 30
+#θrad = 50*(180/pi)
+#g = 9.8
+#R = (U**2/g)*(sin(θrad)*cos(θrad) + cos(θrad)*sqrt(sin(θrad)**2+((2*g*h)/(U**2))))
+#print(R)
+#x = 0
+#Total = 0
+#while x <=  9.86:#R:
+#Total += InvertedParabolicArcCalculation(U,θrad,g,90.517,R)
+#x += 0.1
+#print(Total)
 class MainMenu():
     def __init__(self,Challenge):
         self.Challenge = Challenge
@@ -107,7 +128,6 @@ class SwitchGraph():
     self.B.config(menu=menu)
   def GenerateGraph(self,it):
     global GraphShowing
-    plt.close()
     GraphShowing = it
     #print("Grap", GraphShowing)
     Obj = self.Obj
@@ -124,7 +144,7 @@ class SaveButton():
   def Save(self):
     print(self.Anim)
     if self.name != "Bounce":
-      self.plot.saveself.fig(self.name+".png")
+      self.plot.savefig(self.name+".png")
     else:
       self.Anim.SaveAnimation()      
 class ScaleB():
@@ -222,33 +242,21 @@ class ScaleB():
               self.Delta.set(self.Input.get())
               text = self.Value + "/" + self.Var + ": " + self.unit  + "\n" + "min = " + str(self.MinValue) + " max = " + str(self.MaxValue) + "\n" + "Current Value = " + str(self.Input.get())
               self.Variable.config(text = text)
-      #print(self.Input.get())
-              #if len(self.Input.get()) != 0:
+
     it = Graph(it.U,it.h,it.θ,it.g,it.x,it.y,it.e,it.N,it.M,it.Cd,it.AD,it.A,self.ChallengeAssociated)
     it.Command("")
-        #Challenge1.plot()
-
-
-##class EnterB():
-##    def __init__(self):
-##        EnterButtons.append(self)
-##        self.Delta = Entry(Window,text = "Hello")
-##        self.Delta.grid(row = 2, column = 1)
 
 class Graph():
 
   def __init__(self, U, h, θ,g,x,y,e,N,M,Cd,AD,A,name):
     self.g, self.U, self.h, self.θ = float(g), float(U), float(h), float(θ) ##Change g back to 10 later
-    #print(U,h,θ)
     self.M,self.Cd,self.AD,self.A = M,Cd,AD,A
     self.x,self.y = float(x),float(y)
     self.dt, self.t = 0.001, 0
     self.dX = 0.02
     self.Xa,self.Ya = 0,0
-    #print("self",GraphShowing)
-    #print(pi/180)
     ListOfChangingValues = [self.U,self.h,self.θ,self.x,self.y]
-    self.θrad = self.θ * (np.pi / 180)
+    self.θrad = self.θ * (pi / 180)
     self.X, self.Y = [], []
     self.height, self.width = 550, 600
     Simulations.append(self)
@@ -257,9 +265,6 @@ class Graph():
     self.e = e
     self.N = N
     self.Command = ""
-    #self.self.fig = plt.self.figure()
-    #self.line, = self.ax.plot([],[])
-    #self.ax.set(xlim=(0, 25), ylim=(0, 15))
     self.Save = ""
     self.ButtonBelowGraph = 150
     if self.name != "":
@@ -303,7 +308,7 @@ class Graph():
     U = ScaleB(1.00, 300.00,self.U,100, Challenge[0].height + self.ButtonBelowGraph,"ProjectileTrajectory","U")
     h = ScaleB(0.00, 200.00,self.h, U.DistanceX, Challenge[0].height + self.ButtonBelowGraph,"ProjectileTrajectory","h")
     θ = ScaleB(0.00, 90.00,self.θ, h.DistanceX, Challenge[0].height + self.ButtonBelowGraph,"ProjectileTrajectory","θ")
-    g = ScaleB(0.00, 100.00,self.g, θ.DistanceX, Challenge[0].height + self.ButtonBelowGraph,"ProjectileTrajectory","g")
+    g = ScaleB(0.00, 100.00,self.g, θ.DistanceX, Challenge[0].height + self.ButtonBelowGraph,"ProjectileMotion","g")
     #R = ScaleButtons.append(ScaleB(0.00,100.00,Challenge[0].width,250,"ProjectileTrajectory"))
     setattr(Save,"name",self.name)
     self.ProjectileTrajectory(0)
@@ -327,7 +332,7 @@ class Graph():
       Y = ScaleB(0.00, 1000.00,self.y, X.DistanceX, Challenge[0].height + self.ButtonBelowGraph,"ProjectileToHitTarget","y")
       setattr(Save,"name",self.name)
       self.ProjectileToHitTarget(0)
-    #min U >= np.sqrt(g)*np.sqrt(Y+np.sqrt(X**2+Y**2)) U min when =: X and Y are coords of Point
+    #min U >= sqrt(g)*sqrt(Y+sqrt(X**2+Y**2)) U min when =: X and Y are coords of Point
   def ProjectileMaxRangeButtons(self,z):
     global Buttons,Switch
     for i,it in enumerate(Buttons):
@@ -459,24 +464,25 @@ class Graph():
     #print("hi")
     #print(self.U,self.h)
     Last = False
-    U,Ux,Uy = self.U,self.U*np.cos(self.θrad),self.U*np.sin(self.θrad)
+    U,Ux,Uy = self.U,self.U*cos(self.θrad),self.U*sin(self.θrad)
     self.T,self.UX,self.UY,self.Ulist = [],[],[],[]
-    while (self.h + (self.U * np.sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2)) >= 0 or Last == True:  ##Equation for vertical if below zero want to end graph
+    while (self.h + (self.U * sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2)) >= 0 or Last == True:  ##Equation for vertical if below zero want to end graph
+      #print(self.θrad)
       if self.θ == 90:
         self.X.append(0)
       else:
-        self.X.append(self.U * np.cos(self.θrad) * self.t)
-      self.Y.append(self.h + (self.U * np.sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2))
+        self.X.append(self.U * cos(self.θrad) * self.t)
+      self.Y.append(self.h + (self.U * sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2))
       self.t += self.dt
       if self.name == "AirResistance":
         self.T.append(self.t)
-        Ux = self.U*np.cos(self.θrad)
+        Ux = self.U*cos(self.θrad)
         Uy = Uy - self.g*self.dt
-        U = np.sqrt(Ux**2+Uy**2)
+        U = sqrt(Ux**2+Uy**2)
         self.UX.append(Ux)
         self.UY.append(Uy)
         self.Ulist.append(U)
-      if (self.h + (self.U * np.sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2)) < 0:
+      if (self.h + (self.U * sin(self.θrad) * self.t) - (1 / 2 * self.g * self.t**2)) < 0:
         if Last == True:
             Last = False
         else:
@@ -487,31 +493,31 @@ class Graph():
       self.plot()
   def ProjectileTrajectory(self,z): ##Challenge 2
     x = 0
-    #print(self.dX)
-    print(self.g)
+    print(self.dX)
     #print(self.name)
     if self.name == "ProjectileTrajectory" or "TrajectoryandBounding":
-      R = (self.U**2/self.g)*(np.sin(self.θrad)*np.cos(self.θrad) + np.cos(self.θrad)*np.sqrt(np.sin(self.θrad)**2+((2*self.g*self.h)/(self.U**2))))
-
+      #print("hI")
+      R = (self.U**2/self.g)*(sin(self.θrad)*cos(self.θrad) + cos(self.θrad)*sqrt(sin(self.θrad)**2+((2*self.g*self.h)/(self.U**2))))
     if self.name == "ProjectileToHitTarget":
+      #print("loo")
       R = self.x
-
     if self.name == "ProjectileMaxRange":
+      #print("boo")
+      #print("Hi")
       self.a = (2*self.g*self.h)/(self.U**2)
-      R = ((self.U**2)/(self.g)*np.sqrt(1+(self.a)))
-
+      R = ((self.U**2)/(self.g)*sqrt(1+(self.a)))
     while x <= R:
-        #Ya = (self.h+((self.U**2)/(2*self.g))*sin(self.θrad)**2) Y apogee Equation
-        self.Y.append(self.h + x*np.tan(self.θrad) - (self.g/(2*(self.U**2))) * (1 + np.tan(self.θrad)**2)*x**2)
+        #Ya = (self.h+((self.U**2)/(2*self.g))*sin(self.θrad)**2) Y apogee
+        self.Y.append(self.h + x*tan(self.θrad) - (self.g/(2*(self.U**2))) * (1 + tan(self.θrad)**2)*x**2)
         self.X.append(x)
         x += self.dX
+    #InvertedParabolicArcCalculation(self.U,self.θ,self.g,x,R)
     #Apogee
-    self.Ya = self.h+((self.U**2)/(2*self.g))*np.sin(self.θrad)**2
-    self.Xa = (self.U**2/self.g)*(np.sin(self.θrad)*np.cos(self.θrad))
-    self.t = x/(self.U*np.cos(self.θrad))
-
+    self.Ya = self.h+((self.U**2)/(2*self.g))*sin(self.θrad)**2
+    self.Xa = (self.U**2/self.g)*(sin(self.θrad)*cos(self.θrad))
+    self.t = x/(self.U*cos(self.θrad))
+    #print(Ya,Xa)
     #self.dt = (self.Xa,self.Ya) ## for plotting purposes
-
     if self.Command == getattr(self,"ProjectileTrajectory"):
         self.plot()
         #print(self.name)
@@ -519,10 +525,10 @@ class Graph():
     #print(self.X,self.Y)
   def ProjectileToHitTarget(self,z): ##Challenge 3
       #print(self.U,self.h,self.x,self.y)
-      self.Umin = np.sqrt(self.g)*np.sqrt((self.y-self.h)+np.sqrt(self.x**2+(self.y-self.h)**2))
+      self.Umin = sqrt(self.g)*sqrt((self.y-self.h)+sqrt(self.x**2+(self.y-self.h)**2))
       print(self.Umin)
       if self.x != 0:
-        self.θmin = np.atan(((self.y-self.h)+np.sqrt(self.x**2+(self.y-self.h)**2))/self.x) * (180/np.pi)
+        self.θmin = atan(((self.y-self.h)+sqrt(self.x**2+(self.y-self.h)**2))/self.x) * (180/pi)
       else:
         self.θmin = 0
       a,b,c = ((self.g)/(2*(self.U**2)))*self.x**2,-self.x,self.y-self.h+((self.g*self.x**2)/(2*(self.U**2)))
@@ -530,25 +536,25 @@ class Graph():
       #if b**2 - 4*a*c >= 0 and a > 0:
       self.discriminant = b**2 - 4*a*c
       #print("d: ", self.discriminant, "a: ",a, "b: ",b, "c: ",c)
-      self.θmaxP = np.atan((-b+np.sqrt(self.discriminant))/(2*a))*(180/np.pi)
-      self.θmaxM = np.atan((-b-np.sqrt(self.discriminant))/(2*a))*(180/np.pi)
+      self.θmaxP = atan((-b+sqrt(self.discriminant))/(2*a))*(180/pi)
+      self.θmaxM = atan((-b-sqrt(self.discriminant))/(2*a))*(180/pi)
       #print(self.Umin,self.θmin,self.θmaxP,self.θmaxM,self.h)
       if self.Command == getattr(self,"ProjectileToHitTarget"):
         self.plotProjectileToHitTarget(z)
   def ProjectileMaxRange(self,z): ##Challenge 4
     self.a = (2*self.g*self.h)/(self.U**2)
-    self.θmax = np.asin((1/np.sqrt(2+self.a))) * (180/np.pi)
+    self.θmax = asin((1/sqrt(2+self.a))) * (180/pi)
     d = (self.U**2/self.g)
-    self.tmax = d*np.sqrt(2+self.a)
+    self.tmax = d*sqrt(2+self.a)
     self.Rmax = Graph(self.U,self.h,self.θmax,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"ProjectileMaxRange")
     RMAX = self.Rmax.ProjectileTrajectory(0)
     if self.name == "ProjectileMaxRange":
       R = Graph(self.U,self.h,self.θ,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"ProjectileTrajectory")
       r = R.ProjectileTrajectory(0)
-      self.fig = plt.figure()
+      fig = plt.figure()
       s = InvertedParabolicArcCalculation(self.U,self.θ,self.g,r)
       smax = InvertedParabolicArcCalculation(self.U,self.θmax,self.g,RMAX)
-      Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+      Canvas = FigureCanvasTkAgg(fig, master=BackGround)
       Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
       f = "{n:.2f}"
       plt.ylabel("y/m")
@@ -559,61 +565,74 @@ class Graph():
       plt.ylim(bottom = 0)
       plt.xlim(xmin = 0)
       plt.grid(True)
-      setattr(Save,"plot",self.fig)
+      setattr(Save,"plot",fig)
   def TrajectoryandBounding(self,z): ##Challenge 5
     MinHighLow = Graph(self.U,self.h,self.θ,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"TrajectoryandBounding")
     MinHighLow.ProjectileToHitTarget(0)
     MaxRange = Graph(self.U,self.h,self.θ,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"TrajectoryandBounding")
     Bounding = Graph(self.U,self.h,self.θ,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"TrajectoryandBounding")
     Bounding.Bounding(0)
-    self.fig = plt.figure()
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    fig = plt.figure()
+    Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
     MaxRange.ProjectileMaxRange(0)
     plt.plot(MaxRange.Rmax.X,MaxRange.Rmax.Y,"-")
     plt.plot(Bounding.X,Bounding.Y,"--")
     MinHighLow.plotProjectileToHitTarget(0)
-    setattr(Save,"plot",self.fig)
+    setattr(Save,"plot",fig)
   def Projectiles(self,z): ##Challenge 7
     dt = 0.1
-    self.fig = plt.figure()
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    fig = plt.figure()
+    Canvas = Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
     #θrad = 85*(pi/180)
     θ = [85,78,70.5,60,45,30]
-    θrad = [it*np.pi/180 for i,it in enumerate(θ)]
+    θrad = [it*pi/180 for i,it in enumerate(θ)]
     dX = [self.U*it for i,it in enumerate(θ)]
     for i,it in enumerate(θrad):
       t = 0
       r,T = [],[]
       self.X,self.Y = [],[]
       #print(it)
-      if it > 70.5*(np.pi/180):
-        a = ((3*self.U)/(2*self.g))*np.sin(it)
-        b = np.sqrt((9*self.U**2)/(4*self.g**2)*np.sin(it)**2 - (2*self.U**2)/ (self.g**2))
+      if it > 70.5*(pi/180):
+        a = ((3*self.U)/(2*self.g))*sin(it)
+        b = sqrt((9*self.U**2)/(4*self.g**2)*sin(it)**2 - (2*self.U**2)/ (self.g**2))
         Tmin = a+b
         Tmax = a-b
-        plt.plot(Tmin,np.sqrt((self.U**2*Tmin**2)-(self.g*Tmin**3*self.U*np.sin(it)) + (0.25*self.g**2*Tmin**4)),"X",markersize = 5,color = "red")
-        plt.plot(Tmax,np.sqrt((self.U**2*Tmax**2)-(self.g*Tmax**3*self.U*np.sin(it)) + (0.25*self.g**2*Tmax**4)),"X",markersize = 5,color = "green")
-
+        #tmin = ((3*self.U)/(2*self.g))*(sin(it) - sqrt(sin(it)**2-8/9))
+        #tmax = ((3*self.U)/(2*self.g))*(sin(it) + sqrt(sin(it)**2-8/9))
+        #print(Tmin,Tmax)
+        plt.plot(Tmin,sqrt((self.U**2*Tmin**2)-(self.g*Tmin**3*self.U*sin(it)) + (0.25*self.g**2*Tmin**4)),"X",markersize = 5,color = "red")
+        plt.plot(Tmax,sqrt((self.U**2*Tmax**2)-(self.g*Tmax**3*self.U*sin(it)) + (0.25*self.g**2*Tmax**4)),"X",markersize = 5,color = "green")
+        #Xmin,Xmax = self.U * cos(it) * tmin, self.U * cos(it) * tmax
+        #Ymin,Ymax = self.U* sin(it) - 0.5*self.g*tmin**2, self.U * sin(it) - 0.5*self.g*tmax**2
+        #print(Xmin,Xmax,Ymin,Ymax)
+        #plt.plot(Xmin,Ymin, "X", markersize = 5,color = "red")
+        #plt.plot(Xmax,Ymax,"X", markersize = 5,color = "green")
       if θ[i] == 70.5:
-        Tminmax = (self.U/self.g) * np.sqrt(2)
-        plt.plot(Tminmax,np.sqrt((self.U**2*Tminmax**2)-(self.g*Tminmax**3*self.U*np.sin(it)) + (0.25*self.g**2*Tminmax**4)),"X",markersize = 5)
-
+        Tminmax = (self.U/self.g) * sqrt(2)
+        #print(Tminmax)
+        #Xminmax = self.U * cos(it) * Tminmax
+        #Yminmax = self.U * sin(it) - 0.5 * self.g*Tminmax**2
+        #print(Xminmax,Yminmax)
+        #plt.plot(Xminmax,Yminmax, "X", markersize = 5)
+        plt.plot(Tminmax,sqrt((self.U**2*Tminmax**2)-(self.g*Tminmax**3*self.U*sin(it)) + (0.25*self.g**2*Tminmax**4)),"X",markersize = 5)
       while t <= 1.25*Tmin:
-        r.append(np.sqrt((self.U**2*t**2)-(self.g*t**3*self.U*np.sin(it)) + (0.25*self.g**2*t**4)))
+        r.append(sqrt((self.U**2*t**2)-(self.g*t**3*self.U*sin(it)) + (0.25*self.g**2*t**4)))
         T.append(t)
         self.X.append(self.U * cos(it) * t)
-        self.Y.append(self.U * np.sin(it) * t - 0.5*self.g*t**2)
+        self.Y.append(self.U * sin(it) * t - 0.5*self.g*t**2)
+        #plt.plot(self.X,self.Y)
         t += dt
-
+      #print(self.X,self.Y)
+      #T,r
       plt.plot(T,r)
-      setattr(Save,"plot",self.fig)
+      setattr(Save,"plot",fig)
     plt.ylim(bottom = 0)
     plt.xlim(xmin = 0)
   def Bounce(self,z): ##Challenge 8
-    Ux = self.U*np.cos(self.θrad)
-    Uy = self.U*np.sin(self.θrad)
+    Ux = self.U*cos(self.θrad)
+    Uy = self.U*sin(self.θrad)
     n = 0
     self.X,self.Y = [],[]
     Ax,Ay = 0,-self.g
@@ -635,26 +654,33 @@ class Graph():
         y = 0
         n += 1
         Uy = -self.e*Uy
-        U = np.sqrt(Uy**2+Ux**2)
+        U = sqrt(Uy**2+Ux**2)
       t += dt
-    self.Ya = self.h+((self.U**2)/(2*self.g))*np.sin(self.θrad)**2 + 1
-    self.fig = plt.figure()
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    self.Ya = self.h+((self.U**2)/(2*self.g))*sin(self.θrad)**2 + 1
+    fig = plt.figure()
+    Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
     Anim = AnimateGraph(self.X,self.Y,1.1*self.X[-1],1.1*self.Ya)
     Anim.CreateAnimation()
     #Anim.SaveAnimation()
-    setattr(Save,"plot",self.fig)
-    plt.close()
+    setattr(Save,"plot",fig)
     #setattr(Save,"Anim",Anim)
     #Save.Anim = Anim
-    #Canvas = Canvas = self.figureCanvasTkAgg(self.fig, master=BackGround)
+    #Canvas = Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     #Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
   def AirResistance(self,z): ##Challenge 9
+    #Cd = 1
+    #A = 0.007854
+    #AD = 1
+    #M = 0.1
     K = (1/2*self.Cd*self.AD*self.A)/self.M
-    Ux,Uy = self.U*np.cos(self.θrad),self.U*np.sin(self.θrad)
+    #print(K)
+    Ux,Uy = self.U*cos(self.θrad),self.U*sin(self.θrad)
+    #print(Ux)
     x,y = 0,self.h
     t,dt = 0,0.01
+    #X: Max = -(Vx/V)*M*K*V**2
+    #Y: May = -Mg - Vy/V*M*K*V**2
     U = self.U
     Ax = -Ux*K*U
     Ay = -self.g-((Uy/U)*K*U**2)
@@ -663,7 +689,6 @@ class Graph():
     Count = 1
     NoAirRes = Graph(self.U,self.h,self.θ,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,"AirResistance")
     NoAirRes.ProjectileMotion(0)
-
     while y > 0 or (GraphShowing != "Y,X" and t < NoAirRes.t):
       x = x + (Ux*dt + 0.5*(Ax)*(dt**2))
       y = y + (Uy*dt + 0.5*(Ay)*(dt**2))
@@ -673,7 +698,7 @@ class Graph():
       UX.append(Ux)
       Uy = Uy + Ay*dt
       UY.append(Uy)
-      U = np.sqrt((Ux**2)+(Uy**2))
+      U = sqrt((Ux**2)+(Uy**2))
       Ulist.append(U)
       Ax = -(Ux/U)*K*U**2
       Ay = -self.g-((Uy/U)*K*U**2)
@@ -681,7 +706,7 @@ class Graph():
       T.append(t)
     #for i,it in enumerate(T):
       #print(it,UX[i])
-    self.fig = plt.figure()
+    fig = plt.figure()
     #print(GraphShowing)
     ###TRY TO MAKE MORE EFFICIENT
     ##Graph Y against X
@@ -726,9 +751,9 @@ class Graph():
         plt.xlim(xmin = 0)
     plt.legend("upper right")
     #plt.title(self.name + ": " self.U = 
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
-    setattr(Save,"plot",self.fig)
+    setattr(Save,"plot",fig)
   def Launch(self,z):
     G = 6.67*10**-11
     ##Radius and Mass of Earth(Testing)
@@ -739,26 +764,26 @@ class Graph():
     self.X,self.Y,Z = [],[],[]
     y = 0
     #print(y)
-    Ux,Uy = self.U*np.cos(self.θrad),self.U*np.sin(self.θrad)
+    Ux,Uy = self.U*cos(self.θrad),self.U*sin(self.θrad)
     print(Ux,Uy)
     dt = 0.01
     Ax = 0
     x = 0
     z = 0
     zplot = z/(1*10**6)
-    self.fig = plt.figure()
+    fig = plt.figure()
     ##Use Pyvista for visual instead of matplotlib
-    ax = self.fig.add_subplot(projection = "3d")
+    ax = fig.add_subplot(projection = "3d")
     u, v = np.mgrid[0:rplot:50j, 0:rplot:50j]
     #print(u,v)
     Px = rplot*np.cos(u)*np.sin(v)
     Py = rplot*np.sin(u)*np.sin(v)
     Pz = rplot*np.cos(v)
-    R = r + (np.sqrt(x**2 + y**2 + z**2))
+    R = r + (sqrt(x**2 + y**2 + z**2))
     #Rx = r + x
-    while np.sqrt(x**2 + y**2 + z**2) >= 0: #and np.sqrt(y**2+x**2+z**2) >= 0:
+    while sqrt(x**2 + y**2 + z**2) >= 0: #and sqrt(y**2+x**2+z**2) >= 0:
       ##Radius + Height
-      R = r + (np.sqrt(x**2 + y**2 + z**2))
+      R = r + (sqrt(x**2 + y**2 + z**2))
       #Rx = r + x
       #print(Rx)
       g = -(G*M)/(R**2)
@@ -780,31 +805,32 @@ class Graph():
     plt.ylabel("y/m*10**6")
     plt.xlabel("x/m*10**6")
     #plt.zlabel("z/m*10**6")
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
   def Bounding(self,z):
+  #R = (self.U**2/self.g)*(sin(self.θrad)*cos(self.θrad) + cos(self.θrad)*sqrt(sin(self.θrad)**2+((2*self.g*self.h)/(self.U**2))))
     x = 0
     while self.h+(self.U**2)/(2*self.g)-((self.g)/(2*self.U**2))*x**2 >= 0:
       self.X.append(x)
       self.Y.append(self.h+(self.U**2)/(2*self.g)-((self.g)/(2*self.U**2))*x**2)
       x += self.dX
-
   def plotProjectileToHitTarget(self,z):
     f = "{n:.2f}"
     if self.name == "ProjectileToHitTarget":
-      self.fig = plt.figure()
-      Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+      fig = plt.figure()
+      Canvas = FigureCanvasTkAgg(fig, master=BackGround)
       Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
       plt.ylabel("y/m")
       plt.xlabel("x/m")
-      setattr(Save,"plot",self.fig)
-
+      #plt.title("Projectile to hit X,Y\n"self.Umin)
+      setattr(Save,"plot",fig)
+      #print(Graph(self.Umin, self.h, self.θradmin,self.x,self.y,"").ProjectileTrajectory[0])
     MinSpeed = Graph(self.Umin, self.h, self.θmin,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,self.name)
     MinSpeed.ProjectileTrajectory(0)
     plt.plot(MinSpeed.X,MinSpeed.Y,"--",label = "MinSpeed: U = " + f.format(n = self.Umin) +
              "\n                  θ = " + f.format(n = self.θmin))
     plt.title(self.name+"\nV = " + str(self.U) + " H = " + str(self.h) + " θ = " + str(self.θ) + " g = " + str(self.g))
-
+    #print(self.discriminant)
     if True:
       HighBall = Graph(self.U,self.h,self.θmaxP,self.g,self.x,self.y,self.e,self.N,self.M,self.Cd,self.AD,self.A,self.name) #θmaxP
       HighBall.ProjectileTrajectory(0)
@@ -820,12 +846,12 @@ class Graph():
     plt.xlim(xmin = 0)
     plt.grid(True)
     if self.name == "ProjectileToHitTarget":
-      setattr(Save,"plot",self.fig)
+      setattr(Save,"plot",fig)
     #plt.show()
     ## fix H
   def plot(self):
-    self.fig = plt.figure()
-    Canvas = FigureCanvasTkAgg(self.fig, master=BackGround)
+    fig = plt.figure()
+    Canvas = FigureCanvasTkAgg(fig, master=BackGround)
     Canvas.get_tk_widget().place(x=0,y=50,height=self.height,width=self.width)
     plt.ylabel("y/m")
     plt.xlabel("x/m")
@@ -838,10 +864,11 @@ class Graph():
         plt.plot(self.Xa,self.Ya, "X", markersize = 20)
     plt.ylim(bottom = 0)
     plt.xlim(xmin = 0)
-    #self.fig.saveself.fig(self.name+".png")
-    setattr(Save,"plot",self.fig)
+    #fig.savefig(self.name+".png")
+    setattr(Save,"plot",fig)
   def ClosePlot(self):
-    plt.close()
+    for i,it in enumerate(fig):
+        it.close()
 class SimulationSelect():
     def __init__(self,X,Y):
         self.X = X
@@ -872,10 +899,9 @@ class AnimateGraph:
         self.anim.save("Bounce.mp4",writer = vid)
         plt.close()
   def SaveAnimation(self):
-      print("hi")
+
       plt.close()
 
-#Format: Challenge.append(Graph(U,h,θ,g,x,y,e,n,M,Cd,AD,A,name)
 Challenge.append(Graph(10, 5, 30,9.81,1,0,0,0,0,0,0,0,"ProjectileMotion"))
 Challenge.append(Graph(10, 5, 30,9.81,1,0,0,0,0,0,0,0,"ProjectileTrajectory"))
 Challenge.append(Graph(75, 0, 45,9.81,100.00,100.00,0,0,0,0,0,0,"ProjectileToHitTarget"))
@@ -885,7 +911,7 @@ Challenge.append(Graph(10,0,0,9.81,0,0,0,0,0,0,0,0,"Projectiles"))
 Challenge.append(Graph(10,5,45,9.81,0,0,0.7,3,0,0,0,0,"Bounce"))
 Challenge.append(Graph(20,0,30,9.81,0,0,0,0,0.01,0.3,1,0.50,"AirResistance"))
 
-#Preset Buttons
+#Challenge1.ProjectileMotionCalculation()
 Preset = [[20,2,45,9.81,1,0,0,0,0,0,0,0,"ProjectileMotion"],
           [10, 5, 30,9.81,1,0,0,0,0,0,0,0,"ProjectileMotion"],
           [10,5,30,3.71,1,0,0,0,0,0,0,0,"ProjectileMotion"],
@@ -910,8 +936,6 @@ Preset = [[20,2,45,9.81,1,0,0,0,0,0,0,0,"ProjectileMotion"],
           [20,2,30,9.81,0,0,0,0,0.1,1.15,1,0.007854,"AirResistance"],
           [20,2,30,9.81,0,0,0,0,0.1,0.04,1,0.007854,"AirResistance"],
           [20,2,30,9.81,0,0,0,0,0.1,0.09,1,0.007854,"AirResistance"]]
-
-#Button names
 PresetNames = [["BPHO INPUTS"],["Projectiles On Earth"],
                ["Projectiles On Mars"],["Projectiles On Venus"],
                ["Projectiles On Moon"],["Throwing an object from a Building"],
@@ -926,8 +950,17 @@ PresetNames = [["BPHO INPUTS"],["Projectiles On Earth"],
                ["Short Cylinder"],["Streamlined Body"],
                ["Streamlined Half-Body"]]
 
+#Challenge1.plot()
 Save = SaveButton("","","")
 MMenu = MainMenu(Challenge)
 
+
+#U = ScaleB(0.00, 100.00, Challenge[0].width, 250,"ProjectileMotion")
+#h = ScaleB(0.00, 200.00, U.DistanceX, 250,"ProjectileMotion")
+#θ = ScaleB(0.00, 90.00, h.DistanceX, 250,"ProjectileMotion")
+#Graph2 = Challenge1(30,10,10)
+#Graph2.Calculation()
+#Graph2.plot()
+#InvertedParabolicArcCalculation(10,45,9.81,4.41,12.03)
 mainloop()
 
