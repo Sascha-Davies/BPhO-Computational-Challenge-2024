@@ -1,3 +1,4 @@
+##Inputs
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -6,7 +7,8 @@ from matplotlib.animation import FuncAnimation
 from tkinter import *
 from tkinter import ttk
 from functools import partial
-
+##
+##Variables
 bgcolour = "grey"
 sg = "blue"
 Window = Tk()
